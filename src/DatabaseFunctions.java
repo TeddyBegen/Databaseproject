@@ -31,7 +31,7 @@ public class DatabaseFunctions {
         System.out.println("INSERT INTO enduser(email, fullname, password) VALUES (" + email + ',' + fullname + ',' + password +  ")");
 
         try(Statement statement = connection.createStatement()) {
-            int rowsAffected = statement.executeUpdate("INSERT INTO enduser(email, fullname, password) VALUES (" + email + ',' + fullname + ',' + password +  ")");
+            int rowsAffected = statement.executeUpdate("INSERT INTO enduser(email, fullname, password) VALUES('" + email + "','" + fullname + "','" + password +  "')" );
 
             System.out.println("Rows affected: " + rowsAffected);
 

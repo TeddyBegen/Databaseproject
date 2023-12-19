@@ -51,11 +51,8 @@ public class Main {
             printMenu();
             choice = scanner.nextInt();
         }
-
-
-
+        System.out.println("Exiting!");
     }
-
 
     public static void printMenu() {
         System.out.println("1. Create new user");
