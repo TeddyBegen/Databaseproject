@@ -1,23 +1,82 @@
 // Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
 // then press Enter. You can now see whitespace characters in your code.
 
-//create needed imports for conecting to a postgres database
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Scanner;
+
+import static java.lang.Thread.sleep;
+
 
 public class Main {
 
-    public static void main(String[] args) {
-        //create a new instance of the database connection class
+    public static void main(String[] args) throws SQLException, InterruptedException {
 
-        //call the connect to database method
-        DatabaseConnection.ConnectToDatabase();
+        //connect to database
 
+         Connection connection = DatabaseFunctions.ConnectToDatabase();
 
+        //create a scanner
+        Scanner scanner = new Scanner(System.in);
 
+        printMenu();
 
+        int choice = scanner.nextInt();
+
+        while (choice != 5) {
+            switch (choice) {
+                case 1:
+                    System.out.println("Input email");
+                    scanner.nextLine(); //consume the \n from htting enter in the menu
+                    String email = scanner.nextLine();
+                    System.out.println("Input fullname");
+                    String fullname = scanner.nextLine();
+
+                    System.out.println("Input password");
+                    String password = scanner.nextLine();
+
+                    DatabaseFunctions.createNewUser(connection, email, fullname, password);
+
+                    break;
+                case 2:
+                    System.out.println("Delete user");
+                    DatabaseFunctions.deleteUser();
+
+                    break;
+                case 3:
+                    System.out.println("Update user");
+                    DatabaseFunctions.editUser();
+
+                    break;
+
+                //TODO: make admin only function
+                case 4:
+                    System.out.println("Print list of users");
+                    DatabaseFunctions.printListOfUsers(connection);
+                    break;
+                default:
+                    System.out.println("Invalid choice, try again!");
+                    break;
+            }
+            printMenu();
+            choice = scanner.nextInt();
+        }
 
 
 
     }
+
+
+    public static void printMenu() {
+        System.out.println("1. Create new user");
+        System.out.println("2. Delete user");
+        System.out.println("3. Update user");
+        System.out.println("4. User list");
+        System.out.println("5. Exit");
+
+    }
+
+
 
 }
 
