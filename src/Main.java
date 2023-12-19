@@ -5,12 +5,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Scanner;
 
-import static java.lang.Thread.sleep;
-
-
 public class Main {
 
-    public static void main(String[] args) throws SQLException, InterruptedException {
+    public static void main(String[] args) throws SQLException {
 
         //connect to database
 
@@ -25,38 +22,31 @@ public class Main {
 
         while (choice != 5) {
             switch (choice) {
-                case 1:
+                case 1 -> {
                     System.out.println("Input email");
                     scanner.nextLine(); //consume the \n from htting enter in the menu
                     String email = scanner.nextLine();
                     System.out.println("Input fullname");
                     String fullname = scanner.nextLine();
-
                     System.out.println("Input password");
                     String password = scanner.nextLine();
-
                     DatabaseFunctions.createNewUser(connection, email, fullname, password);
-
-                    break;
-                case 2:
+                }
+                case 2 -> {
                     System.out.println("Delete user");
                     DatabaseFunctions.deleteUser();
-
-                    break;
-                case 3:
+                }
+                case 3 -> {
                     System.out.println("Update user");
                     DatabaseFunctions.editUser();
-
-                    break;
+                }
 
                 //TODO: make admin only function
-                case 4:
+                case 4 -> {
                     System.out.println("Print list of users");
                     DatabaseFunctions.printListOfUsers(connection);
-                    break;
-                default:
-                    System.out.println("Invalid choice, try again!");
-                    break;
+                }
+                default -> System.out.println("Invalid choice, try again!");
             }
             printMenu();
             choice = scanner.nextInt();

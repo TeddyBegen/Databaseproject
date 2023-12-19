@@ -3,22 +3,15 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.*;
-import java.util.Scanner;
 
 
 public class DatabaseFunctions {
 
-    private static Connection connection;
-
-
     static String username = getLoginInfo(0);
     static String password = getLoginInfo(1);
 
-
     static Connection ConnectToDatabase() throws SQLException {
         //create a try catch block
-        String[] loginInfo = new String[2];
-
 
         try {
             Class.forName("org.postgresql.Driver");
@@ -37,7 +30,6 @@ public class DatabaseFunctions {
 
         System.out.println("INSERT INTO enduser(email, fullname, password) VALUES (" + email + ',' + fullname + ',' + password +  ")");
 
-
         try(Statement statement = connection.createStatement()) {
             int rowsAffected = statement.executeUpdate("INSERT INTO enduser(email, fullname, password) VALUES (" + email + ',' + fullname + ',' + password +  ")");
 
@@ -47,16 +39,15 @@ public class DatabaseFunctions {
             System.err.println("Error connecting to the database: " + e.getMessage());
         }
 
-        //retrievs enduser table and prints the information
-
-
-
     }
 
+    //TODO: make function, if password and email matches something in the database it can be removed (potentially admin
+    // only feature)
     static void deleteUser() {
 
     }
 
+    //TODO: make function, if password and email matches something in the database it can be edited to change password
     static void editUser() {
 
     }
