@@ -41,17 +41,6 @@ public class DatabaseFunctions {
 
     }
 
-    //TODO: make function, if password and email matches something in the database it can be removed (potentially admin
-    // only feature)
-    static void deleteUser() {
-
-    }
-
-    //TODO: make function, if password and email matches something in the database it can be edited to change password
-    static void editUser() {
-
-    }
-
     static void printListOfUsers(Connection connection) {
         try(Statement statement = connection.createStatement()) {
             ResultSet resultSet = statement.executeQuery("SELECT * FROM enduser");
@@ -64,6 +53,34 @@ public class DatabaseFunctions {
         } catch (SQLException e) {
             System.err.println("Error connecting to the database: " + e.getMessage());
         }
+    }
+
+    static boolean validateLogin(Connection connection, String email, String password) {
+        try(Statement statement = connection.createStatement()) {
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM enduser WHERE email = '" + email + "' AND password = '" + password + "'");
+
+            if(resultSet.next()) {
+                return true;
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error connecting to the database: " + e.getMessage());
+        }
+        return false;
+    }
+
+    static String checkRole(Connection connection, String email, String password) {
+        try(Statement statement = connection.createStatement()) {
+            ResultSet resultSet = statement.executeQuery("SELECT Role FROM enduser WHERE email = '" + email + "' AND password = '" + password + "'");
+
+            if(resultSet.next()) {
+                return resultSet.getString("Role");
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error connecting to the database: " + e.getMessage());
+        }
+        return null;
     }
 
     private static String getLoginInfo(int x) {

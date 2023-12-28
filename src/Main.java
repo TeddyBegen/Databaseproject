@@ -3,6 +3,7 @@
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.Scanner;
 
 public class Main {
@@ -10,62 +11,172 @@ public class Main {
     public static void main(String[] args) throws SQLException {
 
         //connect to database
+        Connection connection = DatabaseFunctions.ConnectToDatabase();
 
-         Connection connection = DatabaseFunctions.ConnectToDatabase();
+        startMenu(connection);
 
-        //create a scanner
+    }
+
+    public static void startMenu(Connection connection) throws SQLException {
+        printStartMenu();
+
+        DatabaseFunctions.printListOfUsers(connection);
+
         Scanner scanner = new Scanner(System.in);
-
-        printMenu();
-
         int choice = scanner.nextInt();
 
-        while (choice != 5) {
+        while (choice != 3) {
             switch (choice) {
-                case 1 -> {
+                case 1 -> { // create new user
                     System.out.println("Input email");
-                    scanner.nextLine(); //consume the \n from htting enter in the menu
-                    String email = scanner.nextLine();
+                    scanner.nextLine(); // consume the \n from hitting enter in the menu
+                    String newEmail = scanner.nextLine();
                     System.out.println("Input fullname");
                     String fullname = scanner.nextLine();
                     System.out.println("Input password");
+                    String newPassword = scanner.nextLine();
+                    DatabaseFunctions.createNewUser(connection, newEmail, fullname, newPassword);
+                }
+                case 2 -> { // login
+                    System.out.println("Login:");
+                    scanner.nextLine(); // consume the \n from hitting enter in the menu
+                    System.out.println("Enter email:");
+                    String email = scanner.nextLine();
+                    System.out.println("Enter password:");
                     String password = scanner.nextLine();
-                    DatabaseFunctions.createNewUser(connection, email, fullname, password);
-                }
-                case 2 -> {
-                    System.out.println("Delete user");
-                    DatabaseFunctions.deleteUser();
-                }
-                case 3 -> {
-                    System.out.println("Update user");
-                    DatabaseFunctions.editUser();
-                }
+                    if(DatabaseFunctions.validateLogin(connection, email, password)) {
+                        System.out.println("Login successful!");
 
-                //TODO: make admin only function
-                case 4 -> {
-                    System.out.println("Print list of users");
-                    DatabaseFunctions.printListOfUsers(connection);
+                        String role = DatabaseFunctions.checkRole(connection, email, password);
+
+                        switch (Objects.requireNonNull(role)) {
+                            case "Admin" -> {
+                                System.out.println("You are an admin");
+                                AdminMenu(connection);
+                            }
+                            case "Reviewer" -> {
+                                System.out.println("You are a reviewer");
+                                ReviewerMenu(connection);
+                            }
+                            case "Author" -> {
+                                System.out.println("You are an author");
+                                AuthorMenu(connection);
+                            }
+                        }
+
+
+                    } else {
+                        System.out.println("Login failed. Invalid email or password.");
+                    }
                 }
                 default -> System.out.println("Invalid choice, try again!");
             }
-            printMenu();
             choice = scanner.nextInt();
         }
         System.out.println("Exiting!");
+
     }
 
-    public static void printMenu() {
-        System.out.println("1. Create new user");
-        System.out.println("2. Delete user");
-        System.out.println("3. Update user");
-        System.out.println("4. User list");
-        System.out.println("5. Exit");
+    public static void AdminMenu(Connection connection) throws SQLException {
+        printAdminMenu();
 
+        Scanner scanner = new Scanner(System.in);
+        int choice = scanner.nextInt();
+
+        while (choice != 5){
+            switch (choice) {
+                case 1 -> { // add open submission period
+
+                }
+                case 2 -> { // add a reviewer
+
+                }
+                case 3 -> { // remove a reviewer
+
+                }
+                case 4 -> { // search submitted articles
+
+                }
+                default -> System.out.println("Invalid choice, try again!");
+            }
+            choice = scanner.nextInt();
+        }
+        System.out.println("Exiting!");
+
+
+    }
+
+    public static void ReviewerMenu(Connection connection) throws SQLException {
+        printReviewMenu();
+
+        Scanner scanner = new Scanner(System.in);
+        int choice = scanner.nextInt();
+
+        while (choice != 3){
+            switch (choice) {
+                case 1 -> // see list of articles pending review
+                        System.out.println("List of articles pending review:");
+                case 2 -> // review article
+                        System.out.println("Choose article to review:");
+                default -> System.out.println("Invalid choice, try again!");
+            }
+            choice = scanner.nextInt();
+        }
+
+    }
+
+    public static void AuthorMenu(Connection connection) throws SQLException {
+
+        printAutorMenu();
+
+        Scanner scanner = new Scanner(System.in);
+        int choice = scanner.nextInt();
+
+        while (choice != 5){
+            switch (choice) {
+                case 1 -> { // submit article
+
+                }
+                case 2 -> { // list my articles
+
+                }
+                default -> System.out.println("Invalid choice, try again!");
+            }
+            choice = scanner.nextInt();
+        }
+
+    }
+
+    private static void printAutorMenu() {
+        System.out.println("1. Submit article"); //should also print submission period dates
+        System.out.println("2. List my articles");
+        System.out.println("3. Exit");
+    }
+
+    private static void printReviewMenu() {
+        System.out.println("1. See list of articles pending review");
+        System.out.println("2. Review article");
+        System.out.println("3. Exit");
+    }
+
+    private static void printAdminMenu() {
+        System.out.println("1. Add open submission period");
+        System.out.println("2. Add a reviewer");
+        System.out.println("3. Remove a reviewer");
+        System.out.println("4. Search submitted articles");
+        System.out.println("5. Exit");
+    }
+
+    private static void printStartMenu() {
+        System.out.println("1. Create new user");
+        System.out.println("2. Login");
+        System.out.println("3. Exit");
     }
 
 
 
 }
+
 
  
 
