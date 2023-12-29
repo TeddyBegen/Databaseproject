@@ -4,6 +4,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.sql.*;
 
+//This class contains all the functions that interact with the database to make the code in the main class more readable
+
+
 
 public class DatabaseFunctions {
 
@@ -83,12 +86,13 @@ public class DatabaseFunctions {
         return null;
     }
 
+    //TODO: This should be a sepeparate class
     private static String getLoginInfo(int x) {
         //create a try catch block
         String[] loginInfo = new String[2];
         try {
 
-            //create a file reader that reads the textfile on the desktop
+            //create a file reader that reads the textfile on the desktop containing the login info
             FileReader fr = new FileReader("C:\\Users\\tedlj\\Desktop\\loginInfo.txt");
             //create a buffered reader
             BufferedReader br = new BufferedReader(fr);

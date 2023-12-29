@@ -6,10 +6,10 @@ import java.sql.SQLException;
 import java.util.Objects;
 import java.util.Scanner;
 
+//This class contains the UI printing methods and is responsible for the logic in the project
 public class Main {
 
     public static void main(String[] args) throws SQLException {
-
         //connect to database
         Connection connection = DatabaseFunctions.ConnectToDatabase();
 
@@ -47,6 +47,10 @@ public class Main {
                     if(DatabaseFunctions.validateLogin(connection, email, password)) {
                         System.out.println("Login successful!");
 
+
+                        //TODO: here should be a second create thing for if you are a reviewer or author, this should p
+                        // probably not be done with a role tag i the database and should instead be someting the user
+                        // chooses when creating the account and then the database should be updated accordingly
                         String role = DatabaseFunctions.checkRole(connection, email, password);
 
                         switch (Objects.requireNonNull(role)) {
@@ -126,7 +130,6 @@ public class Main {
     }
 
     public static void AuthorMenu(Connection connection) throws SQLException {
-
         printAutorMenu();
 
         Scanner scanner = new Scanner(System.in);
