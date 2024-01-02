@@ -11,7 +11,7 @@ import java.sql.*;
 public class DatabaseFunctions {
 
     //static String username = getLoginInfo(0);
-    //tatic String password = getLoginInfo(1);
+    //static String password = getLoginInfo(1);
 
     static String usernameSamuel = "am2701";
     static String passwordSamuel = "0oo0mggp";
@@ -162,6 +162,71 @@ public class DatabaseFunctions {
             System.err.println("Error connecting to the database: " + e.getMessage());
         }
         return null;
+    }
+
+    public static int checkUserIdAndRole(Connection connection, int userId) {
+        boolean userIdExists = checkTableForUserId(connection, "UserAccount", userId);
+        boolean reviewerIdExists = checkTableForUserId(connection, "Reviewer", userId);
+        boolean authorIdExists = checkTableForUserId(connection, "Author", userId);
+
+        // Check the conditions: UserId should exist, and either ReviewerId or AuthorId should exist, but not both.
+        //return userIdExists && (reviewerIdExists || authorIdExists) && !(reviewerIdExists && authorIdExists);
+        int intCase = 0;
+        if(userIdExists){
+            intCase=1;
+        }
+        if(reviewerIdExists){
+            intCase=2;
+        }
+        if(authorIdExists){
+            intCase=3;
+        }
+
+        return intCase;
+    }
+
+    private static boolean checkTableForUserId(Connection connection, String tableName, int userId) {
+        boolean userIdExists = false;
+
+        String sqlQuery = "SELECT COUNT(*) FROM " + tableName + " WHERE UserId = ?";
+
+        try (
+                PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery)
+        ) {
+            preparedStatement.setInt(1, userId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                resultSet.next();
+                int count = resultSet.getInt(1);
+                userIdExists = count > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return userIdExists;
+    }
+
+    public static int getUserIdByUsername(Connection connection, String username) {
+        int userId = -1; // Default value in case the user is not found
+
+        String sqlQuery = "SELECT UserId FROM UserAccount WHERE Username = ?";
+
+        try (
+                PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery)
+        ) {
+            preparedStatement.setString(1, username);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    userId = resultSet.getInt("UserId");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return userId;
     }
 
     /*

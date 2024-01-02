@@ -74,6 +74,7 @@ public class Main {
                     String username = scanner.nextLine();
                     System.out.println("Enter password:");
                     String userPassword = scanner.nextLine();
+
                     if(DatabaseFunctions.validateLogin(connection, username, userPassword)) {
                         System.out.println("Login successful!");
 
@@ -81,23 +82,27 @@ public class Main {
                         //TODO: here should be a second create thing for if you are a reviewer or author, this should p
                         // probably not be done with a role tag i the database and should instead be someting the user
                         // chooses when creating the account and then the database should be updated accordingly
-                        String role = DatabaseFunctions.checkRole(connection, username, userPassword);
+                        //String role = DatabaseFunctions.checkRole(connection, username, userPassword);
+                        int userID = DatabaseFunctions.getUserIdByUsername(connection, username);
 
-                        switch (Objects.requireNonNull(role)) {
-                            case "Admin" -> {
-                                System.out.println("You are an admin");
-                                AdminMenu(connection);
+                        switch (DatabaseFunctions.checkUserIdAndRole(connection,userID)) {
+                            case 1: {
+                                System.out.println("You have userID but no role assigned...");
+                                //AdminMenu(connection);
                             }
-                            case "Reviewer" -> {
+                            case 2: {
                                 System.out.println("You are a reviewer");
                                 ReviewerMenu(connection);
                             }
-                            case "Author" -> {
+                            case 3: {
                                 System.out.println("You are an author");
                                 AuthorMenu(connection);
                             }
+                            case 4: {
+                                System.out.println("You are an admin");
+                                AdminMenu(connection);
+                            }
                         }
-
 
                     } else {
                         System.out.println("Login failed. Invalid email or password.");
