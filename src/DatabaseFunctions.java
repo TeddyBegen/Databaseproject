@@ -51,12 +51,12 @@ public class DatabaseFunctions {
         return String.valueOf(rowCount);
     }
 
-    static void createNewUser(Connection connection, String userID, String username, String userpassword, String fullname, String phonenumber, String email) {
+    static void createNewUser(Connection connection, String userID, String email, String userpassword, String fullname, String phonenumber) {
 
-        System.out.println("INSERT INTO UserAccount(UserId, Username, UserPassword, FullName, PhoneNumber, Email) VALUES('" + username + "','" + userpassword + "','" + fullname + "','" + phonenumber + "','" + email + "')" );
+        System.out.println("INSERT INTO UserAccount(UserId, Email, UserPassword, FullName, PhoneNumber, Email) VALUES('" + email + "','" + userpassword + "','" + fullname + "','" + phonenumber + "')" );
 
         try(Statement statement = connection.createStatement()) {
-            int rowsAffected = statement.executeUpdate("INSERT INTO UserAccount(UserId, Username, UserPassword, FullName, PhoneNumber, Email) VALUES('" + userID + "','" + username + "','" + userpassword + "','" + fullname + "','" + phonenumber + "','" + email + "')" );
+            int rowsAffected = statement.executeUpdate("INSERT INTO UserAccount(UserId, Email, UserPassword, FullName, PhoneNumber, Email) VALUES('" + userID + "','" + email + "','" + userpassword + "','" + fullname + "','" + phonenumber  + "')" );
 
             System.out.println("Rows affected: " + rowsAffected);
 
@@ -136,9 +136,9 @@ public class DatabaseFunctions {
         }
     }
 
-    static boolean validateLogin(Connection connection, String username, String password) {
+    static boolean validateLogin(Connection connection, String email, String password) {
         try(Statement statement = connection.createStatement()) {
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM UserAccount WHERE Username = '" + username + "' AND UserPassword = '" + password + "'");
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM UserAccount WHERE Email = '" + email + "' AND UserPassword = '" + password + "'");
 
             if(resultSet.next()) {
                 return true;
@@ -150,9 +150,9 @@ public class DatabaseFunctions {
         return false;
     }
 
-    static String checkRole(Connection connection, String username, String password) {
+    /*static String checkRole(Connection connection, String email, String password) {
         try(Statement statement = connection.createStatement()) {
-            ResultSet resultSet = statement.executeQuery("SELECT Role FROM UserAccount WHERE Username = '" + username + "' AND UserPassword = '" + password + "'");
+            ResultSet resultSet = statement.executeQuery("SELECT Role FROM UserAccount WHERE Email = '" + username + "' AND UserPassword = '" + password + "'");
 
             if(resultSet.next()) {
                 return resultSet.getString("Role");
@@ -162,7 +162,7 @@ public class DatabaseFunctions {
             System.err.println("Error connecting to the database: " + e.getMessage());
         }
         return null;
-    }
+    }*/
 
     public static int checkUserIdAndRole(Connection connection, int userId) {
         boolean userIdExists = checkTableForUserId(connection, "UserAccount", userId);
@@ -207,15 +207,15 @@ public class DatabaseFunctions {
         return userIdExists;
     }
 
-    public static int getUserIdByUsername(Connection connection, String username) {
+    public static int getUserIdByEmail(Connection connection, String email) {
         int userId = -1; // Default value in case the user is not found
 
-        String sqlQuery = "SELECT UserId FROM UserAccount WHERE Username = ?";
+        String sqlQuery = "SELECT UserId FROM UserAccount WHERE Email = ?";
 
         try (
                 PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery)
         ) {
-            preparedStatement.setString(1, username);
+            preparedStatement.setString(1, email);
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {

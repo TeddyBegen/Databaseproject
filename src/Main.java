@@ -30,18 +30,16 @@ public class Main {
                 case 1 -> { // create new user
                     System.out.println("Creating a new user account...");
                     scanner.nextLine(); // consume the \n from hitting enter in the menu
-                    System.out.println("Input username:");
-                    String newUsername = scanner.nextLine();
+                    System.out.println("Input email:");
+                    String newEmail = scanner.nextLine();
                     System.out.println("Input password:");
                     String newPassword = scanner.nextLine();
                     System.out.println("Input fullname:");
                     String fullname = scanner.nextLine();
                     System.out.println("Input phonenumber:");
                     String phonenumber = scanner.nextLine();
-                    System.out.println("Input email:");
-                    String newEmail = scanner.nextLine();
                     String userID = DatabaseFunctions.getUserCount(connection);
-                    DatabaseFunctions.createNewUser(connection, userID, newUsername, newPassword, fullname, phonenumber, newEmail);
+                    DatabaseFunctions.createNewUser(connection, userID, newEmail, newPassword, fullname, phonenumber);
                     System.out.println("Choose account-type:");
                     System.out.println("1. Author   2. Reviewer   3. Admin:");
                     String accountType = scanner.nextLine();
@@ -70,12 +68,12 @@ public class Main {
                 case 2 -> { // login
                     System.out.println("Login with a user account.");
                     scanner.nextLine(); // consume the \n from hitting enter in the menu
-                    System.out.println("Enter username:");
-                    String username = scanner.nextLine();
+                    System.out.println("Enter email:");
+                    String email = scanner.nextLine();
                     System.out.println("Enter password:");
                     String userPassword = scanner.nextLine();
 
-                    if(DatabaseFunctions.validateLogin(connection, username, userPassword)) {
+                    if(DatabaseFunctions.validateLogin(connection, email, userPassword)) {
                         System.out.println("Login successful!");
 
 
@@ -83,7 +81,7 @@ public class Main {
                         // probably not be done with a role tag i the database and should instead be someting the user
                         // chooses when creating the account and then the database should be updated accordingly
                         //String role = DatabaseFunctions.checkRole(connection, username, userPassword);
-                        int userID = DatabaseFunctions.getUserIdByUsername(connection, username);
+                        int userID = DatabaseFunctions.getUserIdByEmail(connection, email);
 
                         switch (DatabaseFunctions.checkUserIdAndRole(connection,userID)) {
                             case 1: {
