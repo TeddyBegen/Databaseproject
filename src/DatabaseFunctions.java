@@ -53,10 +53,10 @@ public class DatabaseFunctions {
 
     static void createNewUser(Connection connection, String userID, String email, String userpassword, String fullname, String phonenumber) {
 
-        System.out.println("INSERT INTO UserAccount(UserId, Email, UserPassword, FullName, PhoneNumber, Email) VALUES('" + email + "','" + userpassword + "','" + fullname + "','" + phonenumber + "')" );
+        System.out.println("INSERT INTO UserAccount(UserId, Email, UserPassword, FullName, PhoneNumber) VALUES('" + email + "','" + userpassword + "','" + fullname + "','" + phonenumber + "')" );
 
         try(Statement statement = connection.createStatement()) {
-            int rowsAffected = statement.executeUpdate("INSERT INTO UserAccount(UserId, Email, UserPassword, FullName, PhoneNumber, Email) VALUES('" + userID + "','" + email + "','" + userpassword + "','" + fullname + "','" + phonenumber  + "')" );
+            int rowsAffected = statement.executeUpdate("INSERT INTO UserAccount(UserId, Email, UserPassword, FullName, PhoneNumber) VALUES('" + userID + "','" + email + "','" + userpassword + "','" + fullname + "','" + phonenumber  + "')" );
 
             System.out.println("Rows affected: " + rowsAffected);
 
@@ -68,10 +68,10 @@ public class DatabaseFunctions {
 
     static void createNewAuthor(Connection connection, String userID, String affiliation) {
 
-        System.out.println("INSERT INTO Author(AuthorId, Affiliation) VALUES('" + userID + "','" + affiliation + "')" );
+        System.out.println("INSERT INTO Author(UserId, Affiliation) VALUES('" + userID + "','" + affiliation + "')" );
 
         try(Statement statement = connection.createStatement()) {
-            int rowsAffected = statement.executeUpdate("INSERT INTO Author(AuthorId, Affiliation) VALUES('" + userID + "','" + affiliation + "')" );
+            int rowsAffected = statement.executeUpdate("INSERT INTO Author(UserId, Affiliation) VALUES('" + userID + "','" + affiliation + "')" );
 
             System.out.println("Rows affected: " + rowsAffected);
 
@@ -82,10 +82,10 @@ public class DatabaseFunctions {
 
     static void createNewReviewer(Connection connection, String userID, String researchArea) {
 
-        System.out.println("INSERT INTO Reviewer(AuthorId, researchArea) VALUES('" + userID + "','" + researchArea + "')" );
+        System.out.println("INSERT INTO Reviewer(UserId, researchArea) VALUES('" + userID + "','" + researchArea + "')" );
 
         try(Statement statement = connection.createStatement()) {
-            int rowsAffected = statement.executeUpdate("INSERT INTO Reviewer(AuthorId, researchArea) VALUES('" + userID + "','" + researchArea + "')" );
+            int rowsAffected = statement.executeUpdate("INSERT INTO Reviewer(UserId, researchArea) VALUES('" + userID + "','" + researchArea + "')" );
 
             System.out.println("Rows affected: " + rowsAffected);
 

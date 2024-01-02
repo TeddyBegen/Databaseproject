@@ -80,7 +80,8 @@ public class Main {
                         //TODO: here should be a second create thing for if you are a reviewer or author, this should p
                         // probably not be done with a role tag i the database and should instead be someting the user
                         // chooses when creating the account and then the database should be updated accordingly
-                        //String role = DatabaseFunctions.checkRole(connection, username, userPassword);
+                        //String role = DatabaseFunctions.checkRole(connection, 1
+                        // me, userPassword);
                         int userID = DatabaseFunctions.getUserIdByEmail(connection, email);
 
                         switch (DatabaseFunctions.checkUserIdAndRole(connection,userID)) {
