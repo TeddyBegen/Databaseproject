@@ -9,6 +9,7 @@ import java.util.Scanner;
 //This class contains the UI printing methods and is responsible for the logic in the project
 public class Main {
 
+
     public static void main(String[] args) throws SQLException {
         //connect to database
         Connection connection = DatabaseFunctions.ConnectToDatabase();
@@ -31,11 +32,41 @@ public class Main {
                     System.out.println("Input email");
                     scanner.nextLine(); // consume the \n from hitting enter in the menu
                     String newEmail = scanner.nextLine();
+
                     System.out.println("Input fullname");
-                    String fullname = scanner.nextLine();
+                    String fullName = scanner.nextLine();
+
                     System.out.println("Input password");
-                    String newPassword = scanner.nextLine();
-                    DatabaseFunctions.createNewUser(connection, newEmail, fullname, newPassword);
+                    String password = scanner.nextLine();
+
+                    System.out.println("Input phone");
+                    String phone = scanner.nextLine();
+
+                    DatabaseFunctions.createNewUser(connection, newEmail, fullName, password, phone);
+
+                    int userID = DatabaseFunctions.getUserID(connection, newEmail, password);
+
+
+                    System.out.println("Choose account-type:");
+                    System.out.println("1. Author   2. Reviewer   3. Admin:");
+                    String accountType = scanner.nextLine();
+
+                    if(accountType.equals("1")){
+                        System.out.println("Please enter your affiliation:");
+                        String affiliation = scanner.nextLine();
+                        DatabaseFunctions.createNewAuthor(connection, userID, affiliation);
+                    }
+                    else if (accountType.equals("2")){
+                        System.out.println("Please enter your researchArea:");
+                        String researchArea = scanner.nextLine();
+                        DatabaseFunctions.createNewReviewer(connection, userID, researchArea);
+                    }
+                    else if (accountType.equals("3")){
+                        System.out.println("Creating admin...");
+                        //String researchArea = scanner.nextLine();
+                        DatabaseFunctions.createNewAdmin(connection, userID);
+                    }
+                    else {System.out.println("Wrong input...1");}
                 }
                 case 2 -> { // login
                     System.out.println("Login:");
@@ -45,14 +76,15 @@ public class Main {
                     System.out.println("Enter password:");
                     String password = scanner.nextLine();
                     if(DatabaseFunctions.validateLogin(connection, email, password)) {
-                        System.out.println("Login successful!");
 
+                        int userID = DatabaseFunctions.getUserID(connection, email, password);
+                        System.out.println("Login successful!");
 
                         //TODO: here should be a second create thing for if you are a reviewer or author, this should p
                         // probably not be done with a role tag i the database and should instead be someting the user
                         // chooses when creating the account and then the database should be updated accordingly
-                        String role = DatabaseFunctions.checkRole(connection, email, password);
-
+                        //String role = DatabaseFunctions.checkRole(connection, email, password);
+                        String role = "Author";
                         switch (Objects.requireNonNull(role)) {
                             case "Admin" -> {
                                 System.out.println("You are an admin");
@@ -64,7 +96,7 @@ public class Main {
                             }
                             case "Author" -> {
                                 System.out.println("You are an author");
-                                AuthorMenu(connection);
+                                AuthorMenu(connection, userID);
                             }
                         }
 
@@ -129,7 +161,7 @@ public class Main {
 
     }
 
-    public static void AuthorMenu(Connection connection) throws SQLException {
+    public static void AuthorMenu(Connection connection, int id) throws SQLException {
         printAutorMenu();
 
         Scanner scanner = new Scanner(System.in);
@@ -138,7 +170,22 @@ public class Main {
         while (choice != 5){
             switch (choice) {
                 case 1 -> { // submit article
+                    System.out.println("Input title");
+                    scanner.nextLine(); // consume the \n from hitting enter in the menu
+                    String title = scanner.nextLine();
+                    System.out.println("titel " + title);
+                    System.out.println("Input type");
+                    String type = scanner.nextLine();
+                    System.out.println("type " + type);
+                    System.out.println("Input text");
+                    String text = scanner.nextLine();
+                    System.out.println("text " + text);
+                    System.out.println("Input keywords");
+                    String keywords = scanner.nextLine();
+                    System.out.println("keywords " + keywords);
+                    DatabaseFunctions.createArticle(connection, title, type, text, keywords, id);
 
+                    printStartMenu();
                 }
                 case 2 -> { // list my articles
 
