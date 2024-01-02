@@ -20,7 +20,7 @@ public class Main {
     public static void startMenu(Connection connection) throws SQLException {
         printStartMenu();
 
-        DatabaseFunctions.printListOfUsers(connection);
+        //DatabaseFunctions.printListOfUsers(connection);
 
         Scanner scanner = new Scanner(System.in);
         int choice = scanner.nextInt();
@@ -28,30 +28,60 @@ public class Main {
         while (choice != 3) {
             switch (choice) {
                 case 1 -> { // create new user
-                    System.out.println("Input email");
+                    System.out.println("Creating a new user account...");
                     scanner.nextLine(); // consume the \n from hitting enter in the menu
-                    String newEmail = scanner.nextLine();
-                    System.out.println("Input fullname");
-                    String fullname = scanner.nextLine();
-                    System.out.println("Input password");
+                    System.out.println("Input username:");
+                    String newUsername = scanner.nextLine();
+                    System.out.println("Input password:");
                     String newPassword = scanner.nextLine();
-                    DatabaseFunctions.createNewUser(connection, newEmail, fullname, newPassword);
+                    System.out.println("Input fullname:");
+                    String fullname = scanner.nextLine();
+                    System.out.println("Input phonenumber:");
+                    String phonenumber = scanner.nextLine();
+                    System.out.println("Input email:");
+                    String newEmail = scanner.nextLine();
+                    String userID = DatabaseFunctions.getUserCount(connection);
+                    DatabaseFunctions.createNewUser(connection, userID, newUsername, newPassword, fullname, phonenumber, newEmail);
+                    System.out.println("Choose account-type:");
+                    System.out.println("1. Author   2. Reviewer   3. Admin:");
+                    String accountType = scanner.nextLine();
+
+                    if(accountType.equals("1")){
+                        System.out.println("Please enter your affiliation:");
+                        String affiliation = scanner.nextLine();
+                        DatabaseFunctions.createNewAuthor(connection, userID, affiliation);
+                    }
+                    else if (accountType.equals("2")){
+                        System.out.println("Please enter your researchArea:");
+                        String researchArea = scanner.nextLine();
+                        DatabaseFunctions.createNewAuthor(connection, userID, researchArea);
+                    }
+                    else if (accountType.equals("3")){
+                        System.out.println("Creating admin...");
+                        //String researchArea = scanner.nextLine();
+                        DatabaseFunctions.createNewAdmin(connection, userID);
+                    }
+                    else {System.out.println("Wrong input...1");}
+
+
+
+                    printStartMenu();
                 }
                 case 2 -> { // login
-                    System.out.println("Login:");
+                    System.out.println("Login with a user account.");
                     scanner.nextLine(); // consume the \n from hitting enter in the menu
-                    System.out.println("Enter email:");
-                    String email = scanner.nextLine();
+                    System.out.println("Enter username:");
+                    String username = scanner.nextLine();
                     System.out.println("Enter password:");
-                    String password = scanner.nextLine();
-                    if(DatabaseFunctions.validateLogin(connection, email, password)) {
+                    String userPassword = scanner.nextLine();
+                    if(DatabaseFunctions.validateLogin(connection, username, userPassword)) {
                         System.out.println("Login successful!");
 
 
                         //TODO: here should be a second create thing for if you are a reviewer or author, this should p
                         // probably not be done with a role tag i the database and should instead be someting the user
                         // chooses when creating the account and then the database should be updated accordingly
-                        String role = DatabaseFunctions.checkRole(connection, email, password);
+                        String role = DatabaseFunctions.checkRole(connection, username, userPassword);
 
                         switch (Objects.requireNonNull(role)) {
                             case "Admin" -> {

@@ -10,8 +10,12 @@ import java.sql.*;
 
 public class DatabaseFunctions {
 
-    static String username = getLoginInfo(0);
-    static String password = getLoginInfo(1);
+    //static String username = getLoginInfo(0);
+    //tatic String password = getLoginInfo(1);
+
+    static String usernameSamuel = "am2701";
+    static String passwordSamuel = "0oo0mggp";
+
 
     static Connection ConnectToDatabase() throws SQLException {
         //create a try catch block
@@ -22,19 +26,37 @@ public class DatabaseFunctions {
             System.err.println("PostgreSQL JDBC Driver not found. Include it in your project.");
         }
 
-        Connection connection = DriverManager.getConnection("jdbc:postgresql://pgserver.mau.se:5432/am3594", username, password);
-        System.out.println("Connected to the database!");
+        Connection connection = DriverManager.getConnection("jdbc:postgresql://pgserver.mau.se:5432/am2701", usernameSamuel, passwordSamuel);
+        System.out.println("Connected to the database: pgserver.mau.se:5432/am2701");
 
         return connection;
     }
 
+    static String getUserCount(Connection connection){
 
-    static void createNewUser(Connection connection, String email, String fullname, String password) {
+        String sqlQuery = "SELECT COUNT(*) FROM UserAccount";
+        int rowCount = 0;
+        try (
+                PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
+                ResultSet resultSet = preparedStatement.executeQuery()
+        ) {
+            resultSet.next();
+            rowCount = resultSet.getInt(1);
 
-        System.out.println("INSERT INTO enduser(email, fullname, password) VALUES (" + email + ',' + fullname + ',' + password +  ")");
+            // Print the row count
+            System.out.println("Row count: " + rowCount);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return String.valueOf(rowCount);
+    }
+
+    static void createNewUser(Connection connection, String userID, String username, String userpassword, String fullname, String phonenumber, String email) {
+
+        System.out.println("INSERT INTO UserAccount(UserId, Username, UserPassword, FullName, PhoneNumber, Email) VALUES('" + username + "','" + userpassword + "','" + fullname + "','" + phonenumber + "','" + email + "')" );
 
         try(Statement statement = connection.createStatement()) {
-            int rowsAffected = statement.executeUpdate("INSERT INTO enduser(email, fullname, password) VALUES('" + email + "','" + fullname + "','" + password +  "')" );
+            int rowsAffected = statement.executeUpdate("INSERT INTO UserAccount(UserId, Username, UserPassword, FullName, PhoneNumber, Email) VALUES('" + userID + "','" + username + "','" + userpassword + "','" + fullname + "','" + phonenumber + "','" + email + "')" );
 
             System.out.println("Rows affected: " + rowsAffected);
 
@@ -44,12 +66,68 @@ public class DatabaseFunctions {
 
     }
 
+    static void createNewAuthor(Connection connection, String userID, String affiliation) {
+
+        System.out.println("INSERT INTO Author(AuthorId, Affiliation) VALUES('" + userID + "','" + affiliation + "')" );
+
+        try(Statement statement = connection.createStatement()) {
+            int rowsAffected = statement.executeUpdate("INSERT INTO Author(AuthorId, Affiliation) VALUES('" + userID + "','" + affiliation + "')" );
+
+            System.out.println("Rows affected: " + rowsAffected);
+
+        } catch (SQLException e) {
+            System.err.println("Error connecting to the database: " + e.getMessage());
+        }
+    }
+
+    static void createNewReviewer(Connection connection, String userID, String researchArea) {
+
+        System.out.println("INSERT INTO Reviewer(AuthorId, researchArea) VALUES('" + userID + "','" + researchArea + "')" );
+
+        try(Statement statement = connection.createStatement()) {
+            int rowsAffected = statement.executeUpdate("INSERT INTO Reviewer(AuthorId, researchArea) VALUES('" + userID + "','" + researchArea + "')" );
+
+            System.out.println("Rows affected: " + rowsAffected);
+
+        } catch (SQLException e) {
+            System.err.println("Error connecting to the database: " + e.getMessage());
+        }
+    }
+
+    //TODO Fixa denna...
+    static void createNewAdmin(Connection connection, String userID) {
+
+        System.out.println("UPDATE UserAccount SET AdminUser TRUE" );
+
+        try (
+                // Create a prepared statement for the SQL update query
+                PreparedStatement preparedStatement = connection.prepareStatement(
+                        "UPDATE UserAccount SET AdminUser ='TRUE' WHERE UserId ='"  + userID + "';"
+                )
+        ) {
+            // Set the parameters in the prepared statement
+            //preparedStatement.setBoolean(1, true);
+
+            // Set the condition for the update
+            // For example, updating where another column equals a specific value
+            //preparedStatement.setString(2, userID);
+
+            // Execute the update query
+            int affectedRows = preparedStatement.executeUpdate();
+
+            // Print the number of affected rows
+            System.out.println("Number of affected rows: " + affectedRows);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     static void printListOfUsers(Connection connection) {
         try(Statement statement = connection.createStatement()) {
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM enduser");
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM UserAccount");
 
             while(resultSet.next()) {
-                System.out.printf("%s || %s || %s\n" , resultSet.getString("email"), resultSet.getString("fullname"), resultSet.getString("password"));
+                System.out.printf("%s || %s || %s\n" , resultSet.getString("email"), resultSet.getString("fullname"), resultSet.getString("UserPassword"));
 
             }
 
@@ -58,9 +136,9 @@ public class DatabaseFunctions {
         }
     }
 
-    static boolean validateLogin(Connection connection, String email, String password) {
+    static boolean validateLogin(Connection connection, String username, String password) {
         try(Statement statement = connection.createStatement()) {
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM enduser WHERE email = '" + email + "' AND password = '" + password + "'");
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM UserAccount WHERE Username = '" + username + "' AND UserPassword = '" + password + "'");
 
             if(resultSet.next()) {
                 return true;
@@ -72,9 +150,9 @@ public class DatabaseFunctions {
         return false;
     }
 
-    static String checkRole(Connection connection, String email, String password) {
+    static String checkRole(Connection connection, String username, String password) {
         try(Statement statement = connection.createStatement()) {
-            ResultSet resultSet = statement.executeQuery("SELECT Role FROM enduser WHERE email = '" + email + "' AND password = '" + password + "'");
+            ResultSet resultSet = statement.executeQuery("SELECT Role FROM UserAccount WHERE Username = '" + username + "' AND UserPassword = '" + password + "'");
 
             if(resultSet.next()) {
                 return resultSet.getString("Role");
@@ -86,6 +164,7 @@ public class DatabaseFunctions {
         return null;
     }
 
+    /*
     //TODO: This should be a sepeparate class
     private static String getLoginInfo(int x) {
         //create a try catch block
@@ -113,6 +192,6 @@ public class DatabaseFunctions {
 
 
         return null;
-    }
+    }*/
 
 }
