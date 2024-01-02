@@ -105,13 +105,6 @@ public class DatabaseFunctions {
                         "UPDATE UserAccount SET AdminUser ='TRUE' WHERE UserId ='"  + userID + "';"
                 )
         ) {
-            // Set the parameters in the prepared statement
-            //preparedStatement.setBoolean(1, true);
-
-            // Set the condition for the update
-            // For example, updating where another column equals a specific value
-            //preparedStatement.setString(2, userID);
-
             // Execute the update query
             int affectedRows = preparedStatement.executeUpdate();
 
@@ -165,14 +158,14 @@ public class DatabaseFunctions {
     }*/
 
     public static int checkUserIdAndRole(Connection connection, int userId) {
-        boolean userIdExists = checkTableForUserId(connection, "UserAccount", userId);
+        boolean adminIdExists = checkTableForUserId(connection, "UserAccount", userId);
         boolean reviewerIdExists = checkTableForUserId(connection, "Reviewer", userId);
         boolean authorIdExists = checkTableForUserId(connection, "Author", userId);
 
         // Check the conditions: UserId should exist, and either ReviewerId or AuthorId should exist, but not both.
         //return userIdExists && (reviewerIdExists || authorIdExists) && !(reviewerIdExists && authorIdExists);
         int intCase = 0;
-        if(userIdExists){
+        if(adminIdExists){
             intCase=1;
         }
         if(reviewerIdExists){
@@ -186,8 +179,30 @@ public class DatabaseFunctions {
     }
 
     private static boolean checkTableForUserId(Connection connection, String tableName, int userId) {
-        boolean userIdExists = false;
 
+        if(tableName.equals("UserAccount")){
+            boolean adminUserValue = false; // Default value in case the user is not found
+
+            String sqlQuery = "SELECT AdminUser FROM UserAccount WHERE UserId = ?";
+
+            try (
+                    PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery)
+            ) {
+                preparedStatement.setInt(1, userId);
+
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        adminUserValue = resultSet.getBoolean("AdminUser");
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            return adminUserValue;
+        }
+
+        boolean userIdExists = false;
         String sqlQuery = "SELECT COUNT(*) FROM " + tableName + " WHERE UserId = ?";
 
         try (

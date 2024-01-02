@@ -86,8 +86,8 @@ public class Main {
 
                         switch (DatabaseFunctions.checkUserIdAndRole(connection,userID)) {
                             case 1: {
-                                System.out.println("You have userID but no role assigned...");
-                                //AdminMenu(connection);
+                                System.out.println("You are an admin");
+                                AdminMenu(connection);
                             }
                             case 2: {
                                 System.out.println("You are a reviewer");
@@ -97,14 +97,11 @@ public class Main {
                                 System.out.println("You are an author");
                                 AuthorMenu(connection);
                             }
-                            case 4: {
-                                System.out.println("You are an admin");
-                                AdminMenu(connection);
-                            }
                         }
 
                     } else {
                         System.out.println("Login failed. Invalid email or password.");
+                        System.out.println("Login with a user account.");
                     }
                 }
                 default -> System.out.println("Invalid choice, try again!");
@@ -135,6 +132,9 @@ public class Main {
                 case 4 -> { // search submitted articles
 
                 }
+                case 5 -> {System.out.println("Exiting back to main menu..."); // search submitted articles
+
+                }
                 default -> System.out.println("Invalid choice, try again!");
             }
             choice = scanner.nextInt();
@@ -152,10 +152,11 @@ public class Main {
 
         while (choice != 3){
             switch (choice) {
-                case 1 -> // see list of articles pending review
-                        System.out.println("List of articles pending review:");
-                case 2 -> // review article
-                        System.out.println("Choose article to review:");
+                case 1 -> {System.out.println("List of articles pending review:");}// see list of articles pending review}
+
+                case 2 -> {System.out.println("Choose article to review:");}// review article
+                case 3 -> {System.out.println("Exiting back to main menu...");}
+
                 default -> System.out.println("Invalid choice, try again!");
             }
             choice = scanner.nextInt();
@@ -169,13 +170,16 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         int choice = scanner.nextInt();
 
-        while (choice != 5){
+        while (choice != 3){
             switch (choice) {
                 case 1 -> { // submit article
 
                 }
                 case 2 -> { // list my articles
 
+                }
+                case 3 -> {
+                    System.out.println("Exiting back to main menu..."); // list my articles
                 }
                 default -> System.out.println("Invalid choice, try again!");
             }
