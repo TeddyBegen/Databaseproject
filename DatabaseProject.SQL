@@ -50,6 +50,6 @@ CREATE TABLE Comment (
     ArticleId int,
     CommentDate Date,
     CommentText varchar[5000],
-    FOREIGN KEY (ReviewerId) REFERENCES Reviewer(ReviewerId),
+    FOREIGN KEY (ReviewerId) REFERENCES Reviewer(UserID),
     FOREIGN KEY (ArticleId) REFERENCES Article(ArticleId)
 );
