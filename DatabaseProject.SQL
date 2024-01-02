@@ -1,21 +1,20 @@
 CREATE TABLE UserAccount (
-    UserId INT PRIMARY KEY,
-    Username VARCHAR(20),
-    UserPassword VARCHAR(20),
-    FullName VARCHAR(50),
-    PhoneNumber bigint
+    UserId SERIAL PRIMARY KEY,
+    Email VARCHAR(40) NOT NULL,
+    UserPassword VARCHAR(20) NOT NULL,
+    FullName VARCHAR(50) NOT NULL,
+    PhoneNumber bigint NOT NULL
 );
 
 CREATE TABLE Reviewer (
     ReviewerId int PRIMARY KEY,
-    ResearchArea VARCHAR(20),
+    ResearchArea VARCHAR(20) NOT NULL,
     FOREIGN KEY (ReviewerId) REFERENCES UserAccount(UserId)
 );
 
 CREATE TABLE Author (
     AuthorId int PRIMARY KEY, 
-    Affiliation VARCHAR(20),
-    Email VARCHAR(40),
+    Affiliation VARCHAR(20) NOT NULL,
     FOREIGN KEY (AuthorId) REFERENCES UserAccount(UserId)
 );
 
