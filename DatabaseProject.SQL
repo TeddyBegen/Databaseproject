@@ -26,7 +26,7 @@ CREATE TABLE SubmissionPeriod (
 );
 
 CREATE TABLE Article (
-    ArticleId int PRIMARY KEY,
+    ArticleId SERIAL PRIMARY KEY,
     UserID int,
     Title VARCHAR(20),
     ArticleType varchar(12),
@@ -45,7 +45,7 @@ CREATE TABLE Article (
 );
 
 CREATE TABLE Comment (
-    CommentId int PRIMARY KEY,
+    CommentId SERIAL PRIMARY KEY,
     ReviewerId int,
     ArticleId int,
     CommentDate Date,
