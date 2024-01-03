@@ -189,6 +189,9 @@ public class Main {
                 }
                 case 2 -> { // list my articles
 
+                    System.out.println("List of my articles:");
+                    DatabaseFunctions.printListOfArticles(connection, id);
+
                 }
                 default -> System.out.println("Invalid choice, try again!");
             }

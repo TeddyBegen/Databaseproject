@@ -10,8 +10,8 @@ import java.sql.*;
 
 public class DatabaseFunctions {
 
-    static String username = getLoginInfo(0);
-    static String password = getLoginInfo(1);
+    static String username = getDatabaseLogin(0);
+    static String password = getDatabaseLogin(1);
 
     static Connection ConnectToDatabase() throws SQLException {
         //create a try catch block
@@ -50,6 +50,20 @@ public class DatabaseFunctions {
             int rowsAffected = statement.executeUpdate("INSERT INTO Author(UserId, Affiliation) VALUES('" + userID + "','" + affiliation + "')" );
 
             System.out.println("Rows affected: " + rowsAffected);
+
+        } catch (SQLException e) {
+            System.err.println("Error connecting to the database: " + e.getMessage());
+        }
+    }
+
+    static void printListOfArticles(Connection connection, int id) {
+        try(Statement statement = connection.createStatement()) {
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM article WHERE userID = '" + id + "'");
+
+            while(resultSet.next()) {
+                System.out.printf("%s || %s || %s\n" , resultSet.getString("title"), resultSet.getString("articletype"), resultSet.getString("keywords"));
+
+            }
 
         } catch (SQLException e) {
             System.err.println("Error connecting to the database: " + e.getMessage());
@@ -180,13 +194,13 @@ public class DatabaseFunctions {
     }
 
     //TODO: This should be a sepeparate class
-    private static String getLoginInfo(int x) {
+    private static String getDatabaseLogin(int x) {
         //create a try catch block
         String[] loginInfo = new String[2];
         try {
 
             //create a file reader that reads the textfile on the desktop containing the login info
-            FileReader fr = new FileReader("C:\\Users\\tedlj\\Onedrive\\Desktop\\loginInfo.txt");
+            FileReader fr = new FileReader("C:\\Users\\tedlj\\Desktop\\loginInfo.txt");
             //create a buffered reader
             BufferedReader br = new BufferedReader(fr);
             //create a string that reads the first line in the textfile
