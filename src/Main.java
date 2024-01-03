@@ -19,13 +19,13 @@ public class Main {
 
     public static void startMenu(Connection connection) throws SQLException {
         printStartMenu();
-
         //DatabaseFunctions.printListOfUsers(connection);
 
         Scanner scanner = new Scanner(System.in);
         int choice = scanner.nextInt();
 
         while (choice != 3) {
+            label:
             switch (choice) {
                 case 1 -> { // create new user
                     System.out.println("Creating a new user account...");
@@ -38,32 +38,43 @@ public class Main {
                     String fullname = scanner.nextLine();
                     System.out.println("Input phonenumber:");
                     String phonenumber = scanner.nextLine();
-                    String userID = DatabaseFunctions.getUserCount(connection);
-                    DatabaseFunctions.createNewUser(connection, userID, newEmail, newPassword, fullname, phonenumber);
+                    String userID = String.valueOf(DatabaseFunctions.getUserIdByEmail(connection,newEmail));
+                    DatabaseFunctions.createNewUser(connection, newEmail, newPassword, fullname, phonenumber);
                     System.out.println("Choose account-type:");
-                    System.out.println("1. Author   2. Reviewer   3. Admin:");
+                    System.out.println("1. Author   '2. Reviewer'   3. Admin:");
                     String accountType = scanner.nextLine();
 
-                    if(accountType.equals("1")){
-                        System.out.println("Please enter your affiliation:");
-                        String affiliation = scanner.nextLine();
-                        DatabaseFunctions.createNewAuthor(connection, userID, affiliation);
+                    switch (accountType) {
+                        case "1" -> {
+                            System.out.println("Please enter your affiliation:");
+                            String affiliation = scanner.nextLine();
+                            DatabaseFunctions.createNewAuthor(connection, userID, affiliation);
+                            printStartMenu();
+                        }
+                        case "2" -> {
+                            System.out.println("Please enter your researchArea:");
+                            String researchArea = scanner.nextLine();
+                            DatabaseFunctions.createNewReviewer(connection, userID, researchArea);
+                            printStartMenu();
+                        }
+                        case "3" -> {
+                            System.out.println("Please input the secret admin code:");
+                            String adminCode = scanner.nextLine();
+                            if (adminCode.equals("password123")) {
+                                System.out.println("Code correct! Creating admin...");
+                                DatabaseFunctions.createNewAdmin(connection, userID);
+                                printStartMenu();
+                            } else {
+                                System.out.println("That is NOT the secret admin code... Admin account was not created.");
+                                break label;
+                            }
+                        }
+                        default -> System.out.println("Wrong input...");
                     }
-                    else if (accountType.equals("2")){
-                        System.out.println("Please enter your researchArea:");
-                        String researchArea = scanner.nextLine();
-                        DatabaseFunctions.createNewAuthor(connection, userID, researchArea);
-                    }
-                    else if (accountType.equals("3")){
-                        System.out.println("Creating admin...");
-                        //String researchArea = scanner.nextLine();
-                        DatabaseFunctions.createNewAdmin(connection, userID);
-                    }
-                    else {System.out.println("Wrong input...1");}
 
 
 
-                    printStartMenu();
+
                 }
                 case 2 -> { // login
                     System.out.println("Login with a user account.");
@@ -95,7 +106,7 @@ public class Main {
                             }
                             case 3: {
                                 System.out.println("You are an author");
-                                AuthorMenu(connection);
+                                AuthorMenu(connection, userID);
                             }
                         }
 
@@ -118,21 +129,52 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         int choice = scanner.nextInt();
 
-        while (choice != 5){
+        while (choice != 6){
             switch (choice) {
                 case 1 -> { // add open submission period
-
+                    System.out.println("Create a submission-period...");
+                    DatabaseFunctions.createSubmissionPeriod(connection);
                 }
                 case 2 -> { // add a reviewer
+                    System.out.println("Add a reviewer-account...");
+                    scanner.nextLine(); // consume the \n from hitting enter in the menu
+                    System.out.println("Input email:");
+                    String newEmail = scanner.nextLine();
+                    System.out.println("Input password:");
+                    String newPassword = scanner.nextLine();
+                    System.out.println("Input fullname:");
+                    String fullname = scanner.nextLine();
+                    System.out.println("Input phonenumber:");
+                    String phonenumber = scanner.nextLine();
+                    DatabaseFunctions.createNewUser(connection, newEmail, newPassword, fullname, phonenumber);
+                    String userID = String.valueOf(DatabaseFunctions.getUserIdByEmail(connection,newEmail));
 
+                    System.out.println("Please enter your researchArea:");
+                    String researchArea = scanner.nextLine();
+                    DatabaseFunctions.createNewReviewer(connection, userID, researchArea);
+
+                    printAdminMenu();
                 }
                 case 3 -> { // remove a reviewer
+                    DatabaseFunctions.printListOfReviewers(connection);
+                    scanner.nextLine(); // consume the \n from hitting enter in the menu
+                    System.out.println("Input UserID-number for which reviewer you want to remove:");
+                    int userID = Integer.parseInt(scanner.nextLine());
+                    DatabaseFunctions.removeReviewer(connection, userID);
+                    System.out.println("Reviewer removed.");
+                    DatabaseFunctions.printListOfReviewers(connection);
 
+                    printAdminMenu();
                 }
                 case 4 -> { // search submitted articles
+                    DatabaseFunctions.printSubmittedArticles( connection);
+                }
+                case 5 -> {
+                    System.out.println("Assign reviewers to a submitted articles"); // search submitted articles
 
                 }
-                case 5 -> {System.out.println("Exiting back to main menu..."); // search submitted articles
+                case 6 -> {
+                    System.out.println("Exiting back to main menu..."); // search submitted articles
 
                 }
                 default -> System.out.println("Invalid choice, try again!");
@@ -164,7 +206,7 @@ public class Main {
 
     }
 
-    public static void AuthorMenu(Connection connection) throws SQLException {
+    public static void AuthorMenu(Connection connection, int id) throws SQLException {
         printAutorMenu();
 
         Scanner scanner = new Scanner(System.in);
@@ -173,9 +215,23 @@ public class Main {
         while (choice != 3){
             switch (choice) {
                 case 1 -> { // submit article
+                    System.out.println("Input title:");
+                    scanner.nextLine(); // consume the \n from hitting enter in the menu
+                    String title = scanner.nextLine();
+                    System.out.println("Titel: " + title);
+                    System.out.println("Input article-type:");
+                    String type = scanner.nextLine();
+                    System.out.println("Type: " + type);
+                    System.out.println("Input text:");
+                    String text = scanner.nextLine();
+                    System.out.println("Text: " + text);
+                    System.out.println("Input keywords:");
+                    String keywords = scanner.nextLine();
+                    System.out.println("Keywords: " + keywords);
+                    DatabaseFunctions.createArticle(connection, title, type, text, keywords, id);
 
                 }
-                case 2 -> { // list my articles
+                case 2 -> { // list my articles AND COMMENTS
 
                 }
                 case 3 -> {
@@ -205,7 +261,8 @@ public class Main {
         System.out.println("2. Add a reviewer");
         System.out.println("3. Remove a reviewer");
         System.out.println("4. Search submitted articles");
-        System.out.println("5. Exit");
+        System.out.println("5. Assign reviewers to a submitted articles");
+        System.out.println("6. Exit");
     }
 
     private static void printStartMenu() {
