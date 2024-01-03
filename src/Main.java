@@ -102,7 +102,7 @@ public class Main {
                             }
                             case 2: {
                                 System.out.println("You are a reviewer");
-                                ReviewerMenu(connection);
+                                ReviewerMenu(connection, userID);
                             }
                             case 3: {
                                 System.out.println("You are an author");
@@ -186,19 +186,28 @@ public class Main {
 
     }
 
-    public static void ReviewerMenu(Connection connection) throws SQLException {
+    public static void ReviewerMenu(Connection connection, int userID) throws SQLException {
         printReviewMenu();
 
         Scanner scanner = new Scanner(System.in);
         int choice = scanner.nextInt();
 
-        while (choice != 3){
+        while (choice != 3) {
             switch (choice) {
-                case 1 -> {System.out.println("List of articles pending review:");}// see list of articles pending review}
+                case 1 -> {// see list of articles pending review
+                    System.out.println("List of articles pending review:");
+                    DatabaseFunctions.printListOfArticles(connection, userID);
+                }
+                case 2 -> {// review article
+                    System.out.println("Choose article to review:");
+                    scanner = new Scanner(System.in);
 
-                case 2 -> {System.out.println("Choose article to review:");}// review article
+                    System.out.print("Enter Article ID: ");
+                    int articleId = scanner.nextInt();
+
+                    DatabaseFunctions.reviewArticle(connection, articleId, userID);
+                }
                 case 3 -> {System.out.println("Exiting back to main menu...");}
-
                 default -> System.out.println("Invalid choice, try again!");
             }
             choice = scanner.nextInt();
@@ -275,7 +284,6 @@ public class Main {
         System.out.println("2. Login");
         System.out.println("3. Exit");
     }
-
 
 
 }

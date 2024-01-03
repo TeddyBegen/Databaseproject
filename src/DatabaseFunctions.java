@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.time.LocalDate;
 import java.util.Scanner;
 
@@ -17,8 +16,8 @@ public class DatabaseFunctions {
     //static String username = getLoginInfo(0);
     //static String password = getLoginInfo(1);
 
-    static String usernameSamuel = "am2701";
-    static String passwordSamuel = "0oo0mggp";
+    static String usernameSamuel = "am3069";
+    static String passwordSamuel = "uy6lzjcf";
 
 
     static Connection ConnectToDatabase() throws SQLException {
@@ -255,12 +254,12 @@ public class DatabaseFunctions {
             Scanner scanner = new Scanner(System.in);
             System.out.print("Enter start date (yyyy-mm-dd): ");
             String dateString1 = scanner.next();
-            Date date1 = dateFormat.parse(dateString1);
+            Date date1 = (Date) dateFormat.parse(dateString1);
             java.sql.Date sqlDate1 = new java.sql.Date(date1.getTime());
 
             System.out.print("Enter end date (yyyy-mm-dd): ");
             String dateString2 = scanner.next();
-            Date date2 = dateFormat.parse(dateString2);
+            Date date2 = (Date) dateFormat.parse(dateString2);
             java.sql.Date sqlDate2 = new java.sql.Date(date2.getTime());
 
             preparedStatement.setDate(1, sqlDate1);
@@ -452,5 +451,145 @@ public class DatabaseFunctions {
 
         return null;
     }*/
+
+    public static void printListOfArticles(Connection connection, int userID) {
+        // Visar endast de artiklar som har en matchande articleReview med rätt userID
+        try (Statement statement = connection.createStatement()) {
+            ResultSet resultSet = statement.executeQuery(
+                    "SELECT Article.* " +
+                            "FROM Article " +
+                            "INNER JOIN ArticleReview ON Article.ArticleId = ArticleReview.ArticleId" +
+                            "WHERE ArticleReview.UserID = " + userID +
+                            "AND ArticleReview.Status NOT IN ('Accepted', 'Rejected');"
+            );
+
+            while (resultSet.next()) {
+                System.out.printf("ArticleID: %s || Title: %s || AuthorID: %s\n",
+                        resultSet.getString("articleid"),
+                        resultSet.getString("title"),
+                        resultSet.getString("userid"));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error connecting to the database: " + e.getMessage());
+        }
+    }
+
+    public static void reviewArticle(Connection connection, int articleID, int userID) {
+        // Tillåter en reviewer att endast välja en artikel som har en articleReview med ens egna userID
+        // Förhindrar en reviewer från att välja vilken artikel som helst att review:a
+        try (Statement statement = connection.createStatement()) {
+            ResultSet resultSet = statement.executeQuery(
+                    "SELECT ArticleId, Title, ArticleText FROM Article " +
+                            "WHERE ArticleId = " + articleID +
+                            "AND ArticleReview.Status NOT IN ('Accepted', 'Rejected')" +
+                            "AND EXISTS (SELECT 1 FROM ArticleReview " +
+                            "WHERE Article.ArticleId = ArticleReview.ArticleId AND ArticleReview.UserID = " + userID + ");"
+            );
+
+            if (resultSet.next()) {
+                System.out.println("Article ID: " + resultSet.getInt("ArticleId"));
+                System.out.println("Title: " + resultSet.getString("Title"));
+                System.out.println("Article Text:\n" + resultSet.getString("ArticleText"));
+
+                Scanner scanner = new Scanner(System.in);
+
+                System.out.print("Do you want to accept or reject the article? (Type 'Accept' or 'Reject'): ");
+                String reviewDecision = scanner.nextLine().toLowerCase();
+
+                while (!(reviewDecision.equals("accept") || reviewDecision.equals("reject"))) {
+                    System.out.print("Invalid decision. Please type 'Accept' or 'Reject': ");
+                    reviewDecision = scanner.nextLine().toLowerCase();
+                }
+
+
+                String reviewerStatus = reviewDecision.equalsIgnoreCase("Accept") ? "Accepted" : "Rejected";
+
+                try (PreparedStatement updateStatement = connection.prepareStatement(
+                        "UPDATE ArticleReview SET Status = ? WHERE ArticleID = ? AND UserID = ?")) {
+                    updateStatement.setString(1, reviewerStatus);
+                    updateStatement.setInt(2, articleID);
+                    updateStatement.setInt(3, userID);
+                    updateStatement.executeUpdate();
+                    System.out.println("Article " + reviewerStatus.toLowerCase() + "!");
+                }
+
+                System.out.println("Add comment to review? (Type 'Yes' or 'No'): ");
+                String commentDecision = scanner.nextLine().toLowerCase();
+
+                while (!(commentDecision.equals("yes") || commentDecision.equals("no"))) {
+                    System.out.print("Invalid decision. Please type 'Yes' or 'No': ");
+                    commentDecision = scanner.nextLine().toLowerCase();
+                }
+
+                if (commentDecision.equals("yes")) {
+                    System.out.println("Chose to write a comment on the review. Finish comment by pressing 'Enter'.");
+
+                    String comment = scanner.nextLine();
+
+                    try (PreparedStatement updateStatement = connection.prepareStatement(
+                            "UPDATE ArticleReview SET CommentText = ? WHERE ArticleID = ? AND UserID = ?")) {
+                        updateStatement.setString(1, comment);
+                        updateStatement.setInt(2, articleID);
+                        updateStatement.setInt(3, userID);
+                        updateStatement.executeUpdate();
+
+                        System.out.println("Comment submitted!");
+                    }
+                } else if (commentDecision.equals("no")) {
+                    System.out.println("Chose to not write a comment.");
+                }
+
+            } else {
+                System.out.println("Article not found with ID: " + articleID + " or user not authorized for review.");
+            }
+
+            // Om två reviews har kommit in som båda är 'Accepted' ändras artikelns status till 'Accepted'
+            try (PreparedStatement checkAcceptedStatus = connection.prepareStatement(
+                    "SELECT COUNT(*) AS CountAccepted FROM ArticleReview WHERE ArticleID = ? AND Status = 'Accepted'")
+            ) {
+                checkAcceptedStatus.setInt(1, articleID);
+                ResultSet acceptedStatusResult = checkAcceptedStatus.executeQuery();
+
+                if (acceptedStatusResult.next()) {
+                    int countAccepted = acceptedStatusResult.getInt("CountAccepted");
+
+                    if (countAccepted >= 2) {
+                        try (PreparedStatement updateArticleStatus = connection.prepareStatement(
+                                "UPDATE Article SET ArticleStatus = 'Accepted' WHERE ArticleID = ?")
+                        ) {
+                            updateArticleStatus.setInt(1, articleID);
+                            updateArticleStatus.executeUpdate();
+                            System.out.println("REMOVE AFTER TESTING *** Article status updated to 'Accepted'. *** REMOVE AFTER TESTING");
+                        }
+                    }
+                }
+            }
+
+            // Om en review är 'Rejected' ändras artikelns status till 'Rejected'
+            try (PreparedStatement checkRejectedStatus = connection.prepareStatement(
+                    "SELECT COUNT(*) AS CountRejected FROM ArticleReview WHERE ArticleID = ? AND Status = 'Rejected'")
+            ) {
+                checkRejectedStatus.setInt(1, articleID);
+                ResultSet rejectedStatusResult = checkRejectedStatus.executeQuery();
+
+                if (rejectedStatusResult.next()) {
+                    int countRejected = rejectedStatusResult.getInt("CountRejected");
+
+                    if (countRejected > 0) {
+                        try (PreparedStatement updateArticleStatus = connection.prepareStatement(
+                                "UPDATE Article SET ArticleStatus = 'Rejected' WHERE ArticleID = ?")
+                        ) {
+                            updateArticleStatus.setInt(1, articleID);
+                            updateArticleStatus.executeUpdate();
+                            System.out.println("REMOVE AFTER TESTING *** Article status updated to 'Rejected'. *** REMOVE AFTER TESTING");
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error reviewing the article: " + e.getMessage());
+        }
+    }
+
 
 }
