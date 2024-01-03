@@ -12,6 +12,7 @@ public class DatabaseFunctions {
 
     static String username = getDatabaseLogin(0);
     static String password = getDatabaseLogin(1);
+    static boolean notEmpty;
 
     static Connection ConnectToDatabase() throws SQLException {
         //create a try catch block
@@ -57,17 +58,46 @@ public class DatabaseFunctions {
     }
 
     static void printListOfArticles(Connection connection, int id) {
+
+
         try(Statement statement = connection.createStatement()) {
             ResultSet resultSet = statement.executeQuery("SELECT * FROM article WHERE userID = '" + id + "'");
 
             while(resultSet.next()) {
-                System.out.printf("%s || %s || %s\n" , resultSet.getString("title"), resultSet.getString("articletype"), resultSet.getString("keywords"));
+                System.out.printf("%s: || %s || %s || %s\n" ,resultSet.getString("articleid"), resultSet.getString("title"), resultSet.getString("articletype"), resultSet.getString("keywords"));
+                notEmpty = true;
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error connecting to the database: " + e.getMessage());
+        }
+
+
+    }
+
+    static void printArticle(Connection connection, int id) {
+
+        try(Statement statement = connection.createStatement()) {
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM article WHERE articleid = '" + id + "'");
+
+            while(resultSet.next()) {
+                System.out.printf("%s\n %s" ,resultSet.getString("title"), resultSet.getString("articletext"));
 
             }
 
         } catch (SQLException e) {
             System.err.println("Error connecting to the database: " + e.getMessage());
         }
+
+    }
+
+    static boolean getNotEmpty(){
+        return notEmpty;
+    }
+
+    static void setNotEmptyTrue(){
+        notEmpty = true;
+
     }
 
 

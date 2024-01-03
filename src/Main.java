@@ -188,9 +188,17 @@ public class Main {
                     printStartMenu();
                 }
                 case 2 -> { // list my articles
-
+                    Scanner scanner2 = new Scanner(System.in);
                     System.out.println("List of my articles:");
                     DatabaseFunctions.printListOfArticles(connection, id);
+                    if (DatabaseFunctions.getNotEmpty()){
+                        System.out.println("What article do you want to read?");
+                        scanner.nextLine(); // consume the \n from hitting enter in the menu
+                        int articleID = scanner2.nextInt();
+                        System.out.println("Article: " + articleID);
+                        DatabaseFunctions.printArticle(connection, articleID);
+                        DatabaseFunctions.setNotEmptyTrue();
+                    }
 
                 }
                 default -> System.out.println("Invalid choice, try again!");
