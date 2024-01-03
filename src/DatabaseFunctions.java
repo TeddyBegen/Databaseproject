@@ -229,7 +229,7 @@ public class DatabaseFunctions {
     }
 
     static void checkSubmissionDate(Connection connection){
-        String selectQuery = "SELECT startdate, enddate FROM SubmissionPeriod";
+        String selectQuery = "SELECT startdate ANC enddate FROM SubmissionPeriod";
         try (PreparedStatement preparedStatement = connection.prepareStatement(selectQuery)) {
             ResultSet resultSet = preparedStatement.executeQuery();
 
