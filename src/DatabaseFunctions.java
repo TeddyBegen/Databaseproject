@@ -228,6 +228,24 @@ public class DatabaseFunctions {
         }
     }
 
+    static void checkSubmissionDate(Connection connection){
+        String selectQuery = "SELECT startdate, enddate FROM SubmissionPeriod";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(selectQuery)) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                System.out.printf("%s || %s\n", resultSet.getString("startdate"), resultSet.getString("enddate"));
+            }
+            else {
+                System.out.println("No submission period found");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error retrieving articles: " + e.getMessage());
+
+        }
+
+    }
+
     static void createSubmissionPeriod(Connection connection) {
 
         String insertQuery = "INSERT INTO SubmissionPeriod(StartDate, EndDate) VALUES (?, ?)";

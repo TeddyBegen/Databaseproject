@@ -237,6 +237,11 @@ public class Main {
                 case 3 -> {
                     System.out.println("Exiting back to main menu..."); // list my articles
                 }
+
+                case 4 -> {
+                    System.out.println("check submission date"); // list my articles
+                    DatabaseFunctions.checkSubmissionDate(connection);
+                }
                 default -> System.out.println("Invalid choice, try again!");
             }
             choice = scanner.nextInt();
