@@ -20,7 +20,7 @@ CREATE TABLE Author (
 );
 
 CREATE TABLE SubmissionPeriod (
-    ConferenceID int PRIMARY KEY,
+    ConferenceID SERIAL PRIMARY KEY,
     StartDate date,
     EndDate date
 );
@@ -36,6 +36,7 @@ CREATE TABLE Article (
     ReviewerId_2 int,
     ReviewerStatus_1 varchar(12),
     ReviewerStatus_2 varchar(12),
+    ArticleStatus varchar(12),
     SubmissionDate date,
     ConferenceID int,
     FOREIGN KEY (UserID) REFERENCES Author(UserID),
