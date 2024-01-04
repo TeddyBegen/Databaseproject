@@ -1,12 +1,10 @@
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.time.LocalDate;
 import java.util.Scanner;
+
 
 //This class contains all the functions that interact with the database to make the code in the main class more readable
 
@@ -16,8 +14,8 @@ public class DatabaseFunctions {
     //static String username = getLoginInfo(0);
     //static String password = getLoginInfo(1);
 
-    static String usernameSamuel = "am3069";
-    static String passwordSamuel = "uy6lzjcf";
+    static String usernameSamuel = "am2701";
+    static String passwordSamuel = "0oo0mggp";
 
 
     static Connection ConnectToDatabase() throws SQLException {
@@ -92,7 +90,7 @@ public class DatabaseFunctions {
     static void createArticle(Connection connection, String title, String articletype, String text, String keywords, int id) {
 
         // Inserting the article with an array literal for articletype
-        String insertQuery = "INSERT INTO article(userID, title, articletype, articletext, keywords, articleStatus, submissionDate) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String insertQuery = "INSERT INTO article(userID, title, articletype, articletext, keywords, articleStatus, submissionDate) VALUES (?, ?, CAST(? AS article_type), ?, ?, CAST(? AS article_status), ?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
             preparedStatement.setString(2, title);
             preparedStatement.setString(3, articletype);
@@ -138,14 +136,13 @@ public class DatabaseFunctions {
 
     static void printSubmittedArticles(Connection connection) {
         try (PreparedStatement preparedStatement = connection.prepareStatement(
-                "SELECT * FROM Article WHERE ArticleStatus = 'submitted'")) {
+                "SELECT * FROM Article")) {
 
             ResultSet resultSet = preparedStatement.executeQuery();
 
             while (resultSet.next()) {
                 System.out.printf("ArticleId: %d | UserID: %d | Title: %s | ArticleType: %s | " +
-                                "ArticleText: %s | Keywords: %s | ReviewerId_1: %d | " +
-                                "ReviewerId_2: %d | ReviewerStatus_1: %s | ReviewerStatus_2: %s | " +
+                                "ArticleText: %s | Keywords: %s | " +
                                 "ArticleStatus: %s | SubmissionDate: %s | ConferenceID: %d\n",
                         resultSet.getInt("ArticleId"),
                         resultSet.getInt("UserID"),
@@ -153,10 +150,6 @@ public class DatabaseFunctions {
                         resultSet.getString("ArticleType"),
                         resultSet.getString("ArticleText"),
                         resultSet.getString("Keywords"),
-                        resultSet.getInt("ReviewerId_1"),
-                        resultSet.getInt("ReviewerId_2"),
-                        resultSet.getString("ReviewerStatus_1"),
-                        resultSet.getString("ReviewerStatus_2"),
                         resultSet.getString("ArticleStatus"),
                         resultSet.getDate("SubmissionDate"),
                         resultSet.getInt("ConferenceID"));
@@ -166,6 +159,75 @@ public class DatabaseFunctions {
             e.printStackTrace();
         }
     }
+
+    static void printAuthorsArticles(Connection connection, int userID) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(
+                "SELECT A.ArticleId, A.Title, A.ArticleType, A.ArticleStatus, A.SubmissionDate, " +
+                        "STRING_AGG(AR.CommentText, ' | ') AS Comments " +
+                        "FROM Article A " +
+                        "LEFT JOIN ArticleReview AR ON A.ArticleId = AR.ArticleId " +
+                        "WHERE A.UserID = ? " +
+                        "GROUP BY A.ArticleId, A.Title, A.ArticleType, A.ArticleStatus, A.SubmissionDate")) {
+
+            preparedStatement.setInt(1, userID);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                System.out.printf("ArticleID: %d | Title: %s | ArticleType: %s | ArticleStatus: %s | " +
+                                "SubmissionDate: %s | Comments: %s\n",
+                        resultSet.getInt("ArticleId"),
+                        resultSet.getString("Title"),
+                        resultSet.getString("ArticleType"),
+                        resultSet.getString("ArticleStatus"),
+                        resultSet.getDate("SubmissionDate"),
+                        resultSet.getString("Comments"));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    static void printAssignmentList(Connection connection) {
+        try (PreparedStatement articlesStatement = connection.prepareStatement(
+                "SELECT ArticleId, Title, Keywords, ArticleStatus, SubmissionDate, ConferenceID FROM Article WHERE ArticleStatus = 'submitted'");
+             PreparedStatement reviewersStatement = connection.prepareStatement(
+                     "SELECT ua.UserId, r.ResearchArea, ua.Email, ua.FullName, ua.UserPassword " +
+                             "FROM UserAccount ua JOIN Reviewer r ON ua.UserId = r.UserId")) {
+
+            // Print Reviewers
+            ResultSet reviewersResultSet = reviewersStatement.executeQuery();
+            System.out.println("List of Reviewers:");
+            while (reviewersResultSet.next()) {
+                System.out.printf("UserId: %s | ResearchArea: %s | FullName: %s | Email: %s\n",
+                        reviewersResultSet.getString("UserId"),
+                        reviewersResultSet.getString("ResearchArea"),
+                        reviewersResultSet.getString("FullName"),
+                        reviewersResultSet.getString("Email"));
+            }
+
+            System.out.println("\n------------------------------------------------------------------------------\n"); // Separator
+
+            // Print Submitted Articles
+            ResultSet articlesResultSet = articlesStatement.executeQuery();
+            System.out.println("Submitted Articles:");
+            while (articlesResultSet.next()) {
+                System.out.printf("ArticleId: %d | Title: %s | Keywords: %s | ArticleStatus: %s | SubmissionDate: %s | ConferenceID: %d\n",
+                        articlesResultSet.getInt("ArticleId"),
+                        articlesResultSet.getString("Title"),
+                        articlesResultSet.getString("Keywords"),
+                        articlesResultSet.getString("ArticleStatus"),
+                        articlesResultSet.getDate("SubmissionDate"),
+                        articlesResultSet.getInt("ConferenceID"));
+            }
+            System.out.println("\n------------------------------------------------------------------------------\n"); // Separator
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     static void createNewReviewer(Connection connection, String userID, String researchArea) {
 
@@ -239,11 +301,37 @@ public class DatabaseFunctions {
                 System.out.println("No submission period found");
             }
         } catch (SQLException e) {
-            System.err.println("Error retrieving articles: " + e.getMessage());
+            System.err.println("Error retrieving Submission period: " + e.getMessage());
 
         }
-
     }
+
+    static boolean checkIfInSubmissionPeriod(Connection connection) {
+        boolean result = false;
+        String selectQuery = "SELECT startdate, enddate FROM SubmissionPeriod";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(selectQuery)) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                LocalDate currentDate = LocalDate.now();
+                Date startDate = resultSet.getDate("startdate");
+                Date endDate = resultSet.getDate("enddate");
+
+                // Check if the current date is within the submission period
+                if (startDate != null && endDate != null) {
+                    result = currentDate.isAfter(((java.sql.Date) startDate).toLocalDate()) && currentDate.isBefore(((java.sql.Date) endDate).toLocalDate());
+                }
+            } else {
+                System.out.println("No submission period found");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error retrieving Submission period: " + e.getMessage());
+        }
+
+        return result;
+    }
+
 
     static void createSubmissionPeriod(Connection connection) {
 
@@ -254,12 +342,12 @@ public class DatabaseFunctions {
             Scanner scanner = new Scanner(System.in);
             System.out.print("Enter start date (yyyy-mm-dd): ");
             String dateString1 = scanner.next();
-            Date date1 = (Date) dateFormat.parse(dateString1);
+            Date date1 = dateFormat.parse(dateString1);
             java.sql.Date sqlDate1 = new java.sql.Date(date1.getTime());
 
             System.out.print("Enter end date (yyyy-mm-dd): ");
             String dateString2 = scanner.next();
-            Date date2 = (Date) dateFormat.parse(dateString2);
+            Date date2 = dateFormat.parse(dateString2);
             java.sql.Date sqlDate2 = new java.sql.Date(date2.getTime());
 
             preparedStatement.setDate(1, sqlDate1);
@@ -422,35 +510,34 @@ public class DatabaseFunctions {
         return userId;
     }
 
-    /*
-    //TODO: This should be a sepeparate class
-    private static String getLoginInfo(int x) {
-        //create a try catch block
-        String[] loginInfo = new String[2];
-        try {
+    static void createArticleReview(Connection connection, String userID, String articleID) {
 
-            //create a file reader that reads the textfile on the desktop containing the login info
-            FileReader fr = new FileReader("C:\\Users\\tedlj\\Desktop\\loginInfo.txt");
-            //create a buffered reader
-            BufferedReader br = new BufferedReader(fr);
-            //create a string that reads the first line in the textfile
-            loginInfo[0] = br.readLine();
-            //create a string that reads the second line in the textfile
-            loginInfo[1] = br.readLine();
+        String status = "under review";
 
-            br.close();
-            fr.close();
-            return loginInfo[x];
+        try (Statement statement = connection.createStatement()) {
+            int rowsAffected = statement.executeUpdate("INSERT INTO ArticleReview(UserId, ArticleId, Status) VALUES('" + userID + "','" + articleID +  "','" + status + "')");
 
-        } catch (FileNotFoundException e) {
-            System.err.println("File not found: " + e.getMessage());
-        } catch (IOException e) {
-            System.err.println("IOException: " + e.getMessage());
+            System.out.println("Rows affected: " + rowsAffected);
+
+        } catch (SQLException e) {
+            System.err.println("Error connecting to the database: " + e.getMessage());
         }
 
 
-        return null;
-    }*/
+        try (
+                PreparedStatement preparedStatement = connection.prepareStatement(
+                        "UPDATE Article SET ArticleStatus = 'under review' WHERE ArticleID = ?;"
+                )
+        ) {
+            preparedStatement.setString(1, articleID);
+
+            int affectedRows = preparedStatement.executeUpdate();
+
+            System.out.println("Number of affected rows: " + affectedRows);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static void printListOfArticles(Connection connection, int userID) {
         // Visar endast de artiklar som har en matchande articleReview med rätt userID
@@ -458,9 +545,9 @@ public class DatabaseFunctions {
             ResultSet resultSet = statement.executeQuery(
                     "SELECT Article.* " +
                             "FROM Article " +
-                            "INNER JOIN ArticleReview ON Article.ArticleId = ArticleReview.ArticleId" +
+                            "INNER JOIN ArticleReview ON Article.ArticleId = ArticleReview.ArticleId " +
                             "WHERE ArticleReview.UserID = " + userID +
-                            "AND ArticleReview.Status NOT IN ('Accepted', 'Rejected');"
+                            " AND ArticleReview.Status NOT IN ('accepted', 'rejected');"
             );
 
             while (resultSet.next()) {
@@ -479,11 +566,12 @@ public class DatabaseFunctions {
         // Förhindrar en reviewer från att välja vilken artikel som helst att review:a
         try (Statement statement = connection.createStatement()) {
             ResultSet resultSet = statement.executeQuery(
-                    "SELECT ArticleId, Title, ArticleText FROM Article " +
-                            "WHERE ArticleId = " + articleID +
-                            "AND ArticleReview.Status NOT IN ('Accepted', 'Rejected')" +
-                            "AND EXISTS (SELECT 1 FROM ArticleReview " +
-                            "WHERE Article.ArticleId = ArticleReview.ArticleId AND ArticleReview.UserID = " + userID + ");"
+                    "SELECT Article.ArticleId, Article.Title, Article.ArticleText " +
+                            "FROM Article " +
+                            "INNER JOIN ArticleReview ON Article.ArticleId = ArticleReview.ArticleId " +
+                            "WHERE Article.ArticleId = " + articleID +
+                            " AND ArticleReview.Status NOT IN ('accepted', 'rejected') " +
+                            " AND ArticleReview.UserID = " + userID + ";"
             );
 
             if (resultSet.next()) {
@@ -501,11 +589,10 @@ public class DatabaseFunctions {
                     reviewDecision = scanner.nextLine().toLowerCase();
                 }
 
-
-                String reviewerStatus = reviewDecision.equalsIgnoreCase("Accept") ? "Accepted" : "Rejected";
+                String reviewerStatus = reviewDecision.equalsIgnoreCase("Accept") ? "accepted" : "rejected";
 
                 try (PreparedStatement updateStatement = connection.prepareStatement(
-                        "UPDATE ArticleReview SET Status = ? WHERE ArticleID = ? AND UserID = ?")) {
+                        "UPDATE ArticleReview SET Status = CAST(? AS article_status) WHERE ArticleID = ? AND UserID = ?")) {
                     updateStatement.setString(1, reviewerStatus);
                     updateStatement.setInt(2, articleID);
                     updateStatement.setInt(3, userID);
@@ -545,7 +632,7 @@ public class DatabaseFunctions {
 
             // Om två reviews har kommit in som båda är 'Accepted' ändras artikelns status till 'Accepted'
             try (PreparedStatement checkAcceptedStatus = connection.prepareStatement(
-                    "SELECT COUNT(*) AS CountAccepted FROM ArticleReview WHERE ArticleID = ? AND Status = 'Accepted'")
+                    "SELECT COUNT(*) AS CountAccepted FROM ArticleReview WHERE ArticleID = ? AND Status = 'accepted'")
             ) {
                 checkAcceptedStatus.setInt(1, articleID);
                 ResultSet acceptedStatusResult = checkAcceptedStatus.executeQuery();
@@ -555,7 +642,7 @@ public class DatabaseFunctions {
 
                     if (countAccepted >= 2) {
                         try (PreparedStatement updateArticleStatus = connection.prepareStatement(
-                                "UPDATE Article SET ArticleStatus = 'Accepted' WHERE ArticleID = ?")
+                                "UPDATE Article SET ArticleStatus = 'accepted' WHERE ArticleID = ?")
                         ) {
                             updateArticleStatus.setInt(1, articleID);
                             updateArticleStatus.executeUpdate();
@@ -567,7 +654,7 @@ public class DatabaseFunctions {
 
             // Om en review är 'Rejected' ändras artikelns status till 'Rejected'
             try (PreparedStatement checkRejectedStatus = connection.prepareStatement(
-                    "SELECT COUNT(*) AS CountRejected FROM ArticleReview WHERE ArticleID = ? AND Status = 'Rejected'")
+                    "SELECT COUNT(*) AS CountRejected FROM ArticleReview WHERE ArticleID = ? AND Status = 'rejected'")
             ) {
                 checkRejectedStatus.setInt(1, articleID);
                 ResultSet rejectedStatusResult = checkRejectedStatus.executeQuery();
@@ -577,11 +664,11 @@ public class DatabaseFunctions {
 
                     if (countRejected > 0) {
                         try (PreparedStatement updateArticleStatus = connection.prepareStatement(
-                                "UPDATE Article SET ArticleStatus = 'Rejected' WHERE ArticleID = ?")
+                                "UPDATE Article SET ArticleStatus = 'rejected' WHERE ArticleID = ?")
                         ) {
                             updateArticleStatus.setInt(1, articleID);
                             updateArticleStatus.executeUpdate();
-                            System.out.println("REMOVE AFTER TESTING *** Article status updated to 'Rejected'. *** REMOVE AFTER TESTING");
+                            System.out.println("REMOVE AFTER TESTING *** Article status updated to 'rejected'. *** REMOVE AFTER TESTING");
                         }
                     }
                 }
@@ -590,6 +677,4 @@ public class DatabaseFunctions {
             System.err.println("Error reviewing the article: " + e.getMessage());
         }
     }
-
-
 }

@@ -25,32 +25,32 @@ CREATE TABLE SubmissionPeriod (
     EndDate date
 );
 
+CREATE TYPE article_status AS ENUM ('submitted', 'under review', 'rejected', 'accepted');
+
+CREATE TYPE article_type AS ENUM ('short article', 'full article', 'poster');
+
 CREATE TABLE Article (
     ArticleId SERIAL PRIMARY KEY,
     UserID int,
     Title VARCHAR(20),
-    ArticleType varchar(12),
+    ArticleType article_type,
     ArticleText text,
     Keywords varchar(50),
-    ReviewerId_1 int,
-    ReviewerId_2 int,
-    ReviewerStatus_1 varchar(12),
-    ReviewerStatus_2 varchar(12),
-    ArticleStatus varchar(12),
+    ArticleStatus article_status,
     SubmissionDate date,
     ConferenceID int,
     FOREIGN KEY (UserID) REFERENCES Author(UserID),
-    FOREIGN KEY (ReviewerId_1) REFERENCES Reviewer(UserID),
-    FOREIGN KEY (ReviewerId_2) REFERENCES Reviewer(UserID),
+    FOREIGN KEY (ArticleReviewID_1) REFERENCES ArticleReview(ArticleReviewID),
+    FOREIGN KEY (ArticleReviewID_1) REFERENCES ArticleReview(ArticleReviewID),
     FOREIGN KEY (ConferenceID) REFERENCES SubmissionPeriod(ConferenceID)
 );
 
-CREATE TABLE Comment (
-    CommentId SERIAL PRIMARY KEY,
-    ReviewerId int,
+CREATE TABLE ArticleReview (
+    UserID int,
     ArticleId int,
-    CommentDate Date,
-    CommentText varchar[5000],
-    FOREIGN KEY (ReviewerId) REFERENCES Reviewer(UserID),
+    Status article_status,
+    CommentText text,
+    PRIMARY KEY (UserID, ArticleId),
+    FOREIGN KEY (UserID) REFERENCES Reviewer(UserID),
     FOREIGN KEY (ArticleId) REFERENCES Article(ArticleId)
 );
