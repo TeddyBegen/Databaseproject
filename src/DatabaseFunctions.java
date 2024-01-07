@@ -14,8 +14,8 @@ public class DatabaseFunctions {
     //static String username = getLoginInfo(0);
     //static String password = getLoginInfo(1);
 
-    static String usernameSamuel = "am2701";
-    static String passwordSamuel = "0oo0mggp";
+    static String username = "am2701";
+    static String password = "0oo0mggp";
 
 
     static Connection ConnectToDatabase() throws SQLException {
@@ -27,8 +27,8 @@ public class DatabaseFunctions {
             System.err.println("PostgreSQL JDBC Driver not found. Include it in your project.");
         }
 
-        Connection connection = DriverManager.getConnection("jdbc:postgresql://pgserver.mau.se:5432/am2701", usernameSamuel, passwordSamuel);
-        System.out.println("Connected to the database: pgserver.mau.se:5432/am2701");
+        Connection connection = DriverManager.getConnection("jdbc:postgresql://pgserver.mau.se:5432/" + username, username, password);
+        System.out.println("Connected to the database: pgserver.mau.se:5432/" + username);
 
         return connection;
     }
